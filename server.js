@@ -12,8 +12,8 @@ app.use(cors({
   origin: [
     'http://localhost:5173', // admin
     'http://localhost:5174'  ,// frontend
-      "https://your-frontend.vercel.app",
-    "https://your-admin.vercel.app"
+    'https://gurukrupa-frontend.vercel.app',
+    'https://gurukrupa-admin.vercel.app'
   ],
   credentials: true,
 }));
