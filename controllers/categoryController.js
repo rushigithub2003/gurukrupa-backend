@@ -24,21 +24,72 @@ const getCategory = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const { name, icon, description } = req.body;
-    const exists = await Category.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
-    if (exists) return res.status(400).json({ message: 'Category with this name already exists' });
 
-    const category = await Category.create({ name, icon, description });
+    const exists = await Category.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        message: "Category with this name already exists",
+      });
+    }
+
+    const slug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    const category = await Category.create({
+      name,
+      slug,
+      icon,
+      description,
+    });
+
     res.status(201).json(category);
-  } catch (err) { res.status(400).json({ message: err.message }); }
+  } catch (err) {
+    res.status(400).json({
+      message: err.message,
+    });
+  }
 };
 
 // PUT /api/categories/:id — update (admin)
 const updateCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    const updateData = { ...req.body };
+
+    if (updateData.name) {
+      updateData.slug = updateData.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!category) {
+      return res.status(404).json({
+        message: "Category not found",
+      });
+    }
+
     res.json(category);
-  } catch (err) { res.status(400).json({ message: err.message }); }
+  } catch (err) {
+    res.status(400).json({
+      message: err.message,
+    });
+  }
 };
 
 // DELETE /api/categories/:id — delete (admin)
