@@ -10,6 +10,7 @@ const categorySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Auto-generate slug from name before save
+//categorySchema.pre('save', function(next)  -> change on 13-07-2026
 // categorySchema.pre('save', function(next) {
 //   if (this.isModified('name')) {
 //     this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

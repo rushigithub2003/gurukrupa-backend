@@ -21,6 +21,17 @@ const getCategory = async (req, res) => {
 };
 
 // POST /api/categories — create (admin)
+// const createCategory = async (req, res) => {
+//   try {
+//     const { name, icon, description } = req.body;
+//     const exists = await Category.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+//     if (exists) return res.status(400).json({ message: 'Category with this name already exists' });
+
+//     const category = await Category.create({ name, icon, description });
+//     res.status(201).json(category);
+//   } catch (err) { res.status(400).json({ message: err.message }); }
+// };
+
 const createCategory = async (req, res) => {
   try {
     const { name, icon, description } = req.body;
@@ -57,6 +68,14 @@ const createCategory = async (req, res) => {
 };
 
 // PUT /api/categories/:id — update (admin)
+// const updateCategory = async (req, res) => {
+//   try {
+//     const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+//     if (!category) return res.status(404).json({ message: 'Category not found' });
+//     res.json(category);
+//   } catch (err) { res.status(400).json({ message: err.message }); }
+// };
+
 const updateCategory = async (req, res) => {
   try {
     const updateData = { ...req.body };

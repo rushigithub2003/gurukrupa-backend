@@ -1,4 +1,5 @@
 // server.js — Main Express application entry point
+const maintenanceRoutes = require("./routes/maintenanceRoutes");
 const express    = require('express');
 const mongoose   = require('mongoose');
 const cors       = require('cors');
@@ -10,10 +11,10 @@ const app = express();
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://localhost:5173', // admin
-    'http://localhost:5174'  ,// frontend
-    'https://gurukrupa-frontend.vercel.app',
-    'https://gurukrupa-admin.vercel.app'
+    "http://localhost:5174", // admin
+    "http://localhost:5173", // frontend
+     "https://your-frontend.vercel.app",
+    "https://your-admin.vercel.app"
   ],
   credentials: true,
 }));
@@ -28,6 +29,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth',       require('./routes/authRoutes'));
 app.use('/api/products',   require('./routes/productRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use("/api/maintenance", maintenanceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Gurukrupa API running' }));
