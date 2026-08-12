@@ -12,10 +12,12 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:5174", // admin
-      "http://localhost:5173", // frontend
+      // "http://localhost:5174", //Admin
+      //  "http://localhost:5173",//frontend
       "https://gurukrupa-frontend.vercel.app",
       "https://gurukrupa-admin.vercel.app",
+      "https://gurukrupaenterprises.co.in",
+      "https://www.gurukrupaenterprises.co.in",
     ],
     credentials: true,
   }),
