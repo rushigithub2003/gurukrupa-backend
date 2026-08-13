@@ -1,22 +1,94 @@
 // routes/productRoutes.js
-const express = require('express');
-const router  = express.Router();
+
+const express = require("express");
+
+const router = express.Router();
+
 const {
-  getProducts, getAdminProducts, getProduct,
-  createProduct, updateProduct, deleteProduct, getStats,
-} = require('../controllers/productController');
-const { protect } = require('../middleware/authMiddleware');
-const upload  = require('../middleware/upload');
+  getProducts,
+  getAdminProducts,
+  getAdminProduct,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getStats,
+} = require("../controllers/productController");
 
-// Public routes
-router.get('/',          getProducts);
-router.get('/:id',       getProduct);
+const { protect } = require("../middleware/authMiddleware");
+const upload = require("../middleware/upload");
 
-// Admin routes
-router.get('/admin/all',   protect, getAdminProducts);
-router.get('/admin/stats', protect, getStats);
-router.post('/',           protect, upload.single('image'), createProduct);
-router.put('/:id',         protect, upload.single('image'), updateProduct);
-router.delete('/:id',      protect, deleteProduct);
+// ============================================================
+// PUBLIC ROUTES
+// ============================================================
+
+// Get active products only
+router.get("/", getProducts);
+
+// ============================================================
+// ADMIN GET ROUTES
+// ============================================================
+
+// Get all products including inactive
+// IMPORTANT: Must come before /admin/:id
+router.get(
+  "/admin/all",
+  protect,
+  getAdminProducts
+);
+
+// Dashboard statistics
+// IMPORTANT: Must come before /admin/:id
+router.get(
+  "/admin/stats",
+  protect,
+  getStats
+);
+
+// Get single product for admin
+// Allows admin to edit inactive products
+router.get(
+  "/admin/:id",
+  protect,
+  getAdminProduct
+);
+
+// ============================================================
+// PUBLIC SINGLE PRODUCT
+// ============================================================
+
+// Only active products with active categories
+// should be accessible publicly
+router.get(
+  "/:id",
+  getProduct
+);
+
+// ============================================================
+// ADMIN CRUD
+// ============================================================
+
+// Create product
+router.post(
+  "/",
+  protect,
+  upload.single("image"),
+  createProduct
+);
+
+// Update product
+router.put(
+  "/:id",
+  protect,
+  upload.single("image"),
+  updateProduct
+);
+
+// Delete product
+router.delete(
+  "/:id",
+  protect,
+  deleteProduct
+);
 
 module.exports = router;
