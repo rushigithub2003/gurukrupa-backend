@@ -7,12 +7,39 @@ const { protect } = require("../middleware/authMiddleware");
 const {
   getMaintenance,
   updateMaintenance,
+  createPreviewToken,
+  validatePreviewToken,
 } = require("../controllers/maintenanceController");
 
-// Public
+// ============================================================
+// PUBLIC
+// ============================================================
+
+// Check maintenance status
 router.get("/", getMaintenance);
 
-// Admin
-router.put("/", protect, updateMaintenance);
+// Validate temporary admin preview token
+router.post(
+  "/preview/validate",
+  validatePreviewToken
+);
+
+// ============================================================
+// ADMIN
+// ============================================================
+
+// Update maintenance settings
+router.put(
+  "/",
+  protect,
+  updateMaintenance
+);
+
+// Generate temporary admin preview token
+router.post(
+  "/preview",
+  protect,
+  createPreviewToken
+);
 
 module.exports = router;

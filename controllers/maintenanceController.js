@@ -1,5 +1,6 @@
 // controllers/maintenanceController.js
 // Secure maintenance status controller
+const jwt = require("jsonwebtoken");
 
 const Maintenance = require("../models/Maintenance");
 
@@ -212,6 +213,169 @@ exports.updateMaintenance = async (
     return res.status(500).json({
       message:
         "Unable to update maintenance settings",
+    });
+  }
+};
+
+// ============================================================
+// CREATE ADMIN WEBSITE PREVIEW TOKEN
+// POST /api/maintenance/preview
+// ADMIN ONLY
+// ============================================================
+
+exports.createPreviewToken = async (req, res) => {
+  try {
+    // --------------------------------------------------------
+    // Make sure authenticated admin exists
+    // --------------------------------------------------------
+
+    if (!req.admin || !req.admin._id) {
+      return res.status(401).json({
+        message: "Not authorized",
+      });
+    }
+
+    // --------------------------------------------------------
+    // Create short-lived preview token
+    // --------------------------------------------------------
+
+    const token = jwt.sign(
+      {
+        id: req.admin._id.toString(),
+        purpose: "website-preview",
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "10m",
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      token,
+      expiresIn: 600,
+    });
+  } catch (err) {
+    console.error(
+      "Create preview token error:",
+      err.message
+    );
+
+    return res.status(500).json({
+      message:
+        "Unable to create website preview",
+    });
+  }
+};
+
+// ============================================================
+// VALIDATE ADMIN WEBSITE PREVIEW TOKEN
+// POST /api/maintenance/preview/validate
+// PUBLIC ENDPOINT
+// ============================================================
+
+exports.validatePreviewToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    // --------------------------------------------------------
+    // Validate token exists
+    // --------------------------------------------------------
+
+    if (
+      !token ||
+      typeof token !== "string"
+    ) {
+      return res.status(401).json({
+        valid: false,
+        message: "Preview token is required.",
+      });
+    }
+
+    // --------------------------------------------------------
+    // Verify JWT
+    // --------------------------------------------------------
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    // --------------------------------------------------------
+    // Make sure this is a website preview token
+    // --------------------------------------------------------
+
+    if (
+      !decoded ||
+      decoded.purpose !== "website-preview" ||
+      typeof decoded.id !== "string"
+    ) {
+      return res.status(401).json({
+        valid: false,
+        message: "Invalid preview token.",
+      });
+    }
+
+    // --------------------------------------------------------
+    // Verify admin still exists and is active
+    // --------------------------------------------------------
+
+    const Admin = require("../models/Admin");
+
+    const admin = await Admin.findById(
+      decoded.id
+    ).select("_id isActive role");
+
+    if (!admin) {
+      return res.status(401).json({
+        valid: false,
+        message: "Admin account not found.",
+      });
+    }
+
+    if (admin.isActive === false) {
+      return res.status(403).json({
+        valid: false,
+        message: "Admin account is disabled.",
+      });
+    }
+
+    if (admin.role !== "admin") {
+      return res.status(403).json({
+        valid: false,
+        message: "Admin permission required.",
+      });
+    }
+
+    // --------------------------------------------------------
+    // Preview is valid
+    // --------------------------------------------------------
+
+    return res.status(200).json({
+      valid: true,
+    });
+
+  } catch (err) {
+
+    // Expired / invalid JWT
+    if (
+      err.name === "JsonWebTokenError" ||
+      err.name === "TokenExpiredError"
+    ) {
+      return res.status(401).json({
+        valid: false,
+        message: "Preview token is invalid or expired.",
+      });
+    }
+
+    console.error(
+      "Preview token validation error:",
+      err.message
+    );
+
+    return res.status(500).json({
+      valid: false,
+      message: "Unable to validate website preview.",
     });
   }
 };
